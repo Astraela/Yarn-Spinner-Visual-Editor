@@ -9,8 +9,14 @@ public class Node : MonoBehaviour
 
     private Vector3 offset;
 
+    bool downEnough = false;
+    float downEnoughCount = 0;
+    float downEnoughTreshold = .5f;
+
     void Update(){
-        if(dragging) 
+        if(dragging && !downEnough) downEnoughCount += Time.deltaTime;
+        if(dragging && !downEnough && downEnoughCount >= downEnoughTreshold) downEnough = true;
+        if(!dragging && !downEnough) return;
             transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition) + offset;
     }
 
@@ -23,6 +29,10 @@ public class Node : MonoBehaviour
 
     public void OnUp(PointerEventData eventData){
         if(eventData.button != PointerEventData.InputButton.Left) return;
+        if(downEnough == false)
+            GetComponentInParent<Lines.Line>().OnPointerDown(null);
+        downEnoughCount = 0;
+        downEnough = false;
         dragging = false;
     }
 }

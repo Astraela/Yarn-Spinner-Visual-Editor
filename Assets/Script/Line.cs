@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 public class Line : MonoBehaviour
 {
-    public List<Box> boxes = new List<Box>();
+    public HashSet<Box> boxes = new HashSet<Box>();
 
 
     private bool dragging = false;
@@ -24,12 +24,18 @@ public class Line : MonoBehaviour
 
     bool downEnough = false;
     float downEnoughCount = 0;
-    float downEnoughTreshold = .5f;
+    float downEnoughTreshold = .2f;
     void Update()
     {
         if(dragging && !downEnough) downEnoughCount += Time.deltaTime;
-        if(dragging && !downEnough && downEnoughCount >= downEnoughTreshold) downEnough = true;
-        if(!dragging && !downEnough) return;
+        if(dragging && !downEnough && downEnoughCount >= downEnoughTreshold){
+            downEnough = true;
+                transform.SetParent(canvas,true);
+            foreach(Image img in GetComponentsInChildren<Image>()){
+                img.raycastTarget = false;
+            }
+        }
+        if(!dragging || !downEnough) return;
         if(boxes.Count == 0 ){
             if(transform.parent != canvas)
                 transform.SetParent(canvas,true);
@@ -72,26 +78,25 @@ public class Line : MonoBehaviour
     public void OnDown(PointerEventData eventData){
         if(eventData.button != PointerEventData.InputButton.Left) return;
         offset = transform.position - Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        ServiceDesk.instance.SetItem("CurrentLine",gameObject);
             lastParent = transform.parent;
             lastIndex = transform.GetSiblingIndex();
+        ServiceDesk.instance.SetItem("CurrentLine",gameObject);
         boxes.Add(transform.parent.GetComponent<Box>());
-            transform.SetParent(canvas,true);
+        downEnoughCount = 0;
+        downEnough = false;
         dragging = true;
-        foreach(Image img in GetComponentsInChildren<Image>()){
-            img.raycastTarget = false;
-        }
     }
 
     public void OnUp(PointerEventData eventData){
         if(eventData.button != PointerEventData.InputButton.Left) return;
-        downEnoughCount = 0;
-        downEnough = false;
-        ServiceDesk.instance.SetItem("CurrentLine",null);
         dragging = false;
+        if(downEnough == false)
+            GetComponentInParent<Lines.Line>().OnPointerDown(null);
+        ServiceDesk.instance.SetItem("CurrentLine",null);
             PlaceLine();
         foreach(Image img in GetComponentsInChildren<Image>()){
             img.raycastTarget = true;
         }
+        boxes.Clear();
     }
 }

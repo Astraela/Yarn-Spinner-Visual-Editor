@@ -45,46 +45,50 @@ public static class Deserializer
         }
     }
 
+    private static Lines.Line LastLine = null;
     private static Lines.Line currentParent = null;
-        private static int choiceIndex = 0;
     private static Lines.Dialogue lastDialogue = null;
     private static int CurrentIndentation = 0;
     private static void LineSearch(string[] arr, int index, string line){
-        if(line.Replace("/t","").StartsWith("->")){
+        if(line.TrimStart('\t').StartsWith("->")){
             //Do CHOICE THING IDFK
-            int indentation = line.Length - line.Replace("/t","").Length;
-            if(currentParent.type == Lines.LineType.Choice && indentation == CurrentIndentation){
-                choiceIndex++;
-                (currentParent as Lines.Choice).AddChoice(line.Replace("/t","").Replace("-> ","").Replace("->",""));
-                
-            }else{
-                currentParent = CreateChoice(line.Replace("/t","").Replace("-> ","").Replace("->",""));
-                CurrentIndentation = indentation;
+            int indentation = line.Length - line.TrimStart('\t').Length;
+            if(currentParent.type == Lines.LineType.Choice && indentation == CurrentIndentation-1){
+                (currentParent as Lines.Choice).AddChoice(line.TrimStart('\t').Replace("-> ","").Replace("->",""));
+            }else if(indentation == CurrentIndentation){
+                currentParent = CreateChoice(line.TrimStart('\t').Replace("-> ","").Replace("->",""));
+                CurrentIndentation = indentation+1;
+            }else if(indentation < CurrentIndentation){
+                while(indentation != CurrentIndentation-1){
+                    currentParent = currentParent.lineParent;
+                    CurrentIndentation -= 1;
+                }
+                (currentParent as Lines.Choice).AddChoice(line.TrimStart('\t').Replace("-> ","").Replace("->",""));
             }
-        }else if(line.Replace("/t","").StartsWith("===")){
+        }else if(line.TrimStart('\t').StartsWith("===")){
             currentState = state.NodeSearch;
         }else{
             //Treat as DIALOGUE
             if(currentParent.type == Lines.LineType.Choice){
-                int indentation = line.Length - line.Replace("/t","").Length;
-                if(indentation == CurrentIndentation + 1){
+                int indentation = line.Length - line.TrimStart('\t').Length;
+                if(indentation == CurrentIndentation){
                     if(lastDialogue == null){
                         lastDialogue = CreateDialogue();
                     }
-                    lastDialogue.dialogueLines += (line.Replace("/t","") + "\n");
+                    lastDialogue.dialogueLines += (line.TrimStart('\t') + "\n");
                 }else{
                     while(CurrentIndentation != indentation){
                         currentParent = currentParent.lineParent;
                         CurrentIndentation -= 1;
                     }
                     lastDialogue = CreateDialogue();
-                    lastDialogue.dialogueLines += (line.Replace("/t","") + "\n");
+                    lastDialogue.dialogueLines += (line.TrimStart('\t') + "\n");
                 }
             }else{
                 if(lastDialogue == null){
                     lastDialogue = CreateDialogue();
                 }
-                lastDialogue.dialogueLines += (line.Replace("/t","") + "\n");
+                lastDialogue.dialogueLines += (line.TrimStart('\t') + "\n");
             }
             return;
         }
@@ -105,10 +109,11 @@ public static class Deserializer
         newNode.transform.SetParent(canvas);
         var dialog = newNode.GetComponent<Lines.Dialogue>();
         if(currentParent.type == Lines.LineType.Choice){
-            var currentBox = (currentParent as Lines.Choice).choices[choiceIndex].option.GetComponentInChildren<Box>();
+            var choice = currentParent as Lines.Choice;
+            var currentBox = choice.choices[choice.choices.Count-1].option.GetComponentInChildren<Box>();
             dialog.transform.SetParent(currentBox.transform);
             dialog.transform.SetSiblingIndex(currentBox.transform.childCount-2);
-            (currentParent as Lines.Choice).AddLine(dialog);
+            choice.AddLine(dialog);
             currentBox.UpdateSize();
         }else{
             var currentBox = (currentParent as Lines.Node).GetComponentInChildren<Box>();
@@ -126,10 +131,11 @@ public static class Deserializer
         newNode.transform.SetParent(canvas);
         var choice = newNode.GetComponent<Lines.Choice>();
         if(currentParent.type == Lines.LineType.Choice){
-            var currentBox = (currentParent as Lines.Choice).choices[choiceIndex].option.GetComponentInChildren<Box>();
+            var currentChoice = currentParent as Lines.Choice;
+            var currentBox = currentChoice.choices[currentChoice.choices.Count-1].option.GetComponentInChildren<Box>();
             choice.transform.SetParent(currentBox.transform);
             choice.transform.SetSiblingIndex(currentBox.transform.childCount-2);
-            (currentParent as Lines.Choice).AddLine(choice);
+            currentChoice.AddLine(choice);
             currentBox.UpdateSize();
         }else{
             var currentBox = (currentParent as Lines.Node).GetComponentInChildren<Box>();

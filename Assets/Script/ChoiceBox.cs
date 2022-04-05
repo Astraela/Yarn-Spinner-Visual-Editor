@@ -12,7 +12,7 @@ public class ChoiceBox : MonoBehaviour
     RectTransform rtParent;
     VerticalLayoutGroup group;
 
-    private void Start(){
+    private void Awake(){
         rt = GetComponent<RectTransform>();
         group = GetComponent<VerticalLayoutGroup>();
         rtParent = transform.parent.GetComponent<RectTransform>();
@@ -38,15 +38,10 @@ public class ChoiceBox : MonoBehaviour
         rtParent.ForceUpdateRectTransforms();
         //rtParent.sizeDelta += new Vector2(0,size-rt.sizeDelta.y);
         //rt.sizeDelta = new Vector2(rt.sizeDelta.x,size);
-        foreach(Box box in GetComponentsInParent<Box>()){
-            if(transform.IsChildOf(box.transform) && priority == box.priority){
-                box.UpdateSize();
-            }
-        }
-        foreach(ChoiceBox box in GetComponentsInParent<ChoiceBox>()){
-            if(box != this && transform.IsChildOf(box.transform) && priority == box.priority){
-                box.UpdateSize();
-            }
-        }
+        
+        if(transform.parent.GetComponentInParent<Box>())
+            transform.parent.GetComponentInParent<Box>().UpdateSize();
+        if(transform.parent.GetComponentInParent<ChoiceBox>())
+            transform.parent.GetComponentInParent<ChoiceBox>().UpdateSize();
     }
 }

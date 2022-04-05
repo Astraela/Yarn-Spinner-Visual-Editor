@@ -28,6 +28,7 @@ public class Choice : Line
     public void AddLine(Line line){
         int index = line.GetComponentInParent<Box>().transform.parent.GetSiblingIndex();
         choices[index].lines.Add(line);
+        line.lineParent = this;
     }
 
     public void RemoveLine(Line line){
@@ -66,8 +67,9 @@ public class Choice : Line
 
         foreach(ChoiceList choiceList in choices){
             str += indentation + "-> " + choiceList.choiceString + "\n";
-            foreach(Lines.Line line in choiceList.lines){
-                str += line.Serialize(indentation + "\t");
+            foreach(Transform line in choiceList.option.GetComponentInChildren<Box>().transform){
+                if(line.GetComponent<Lines.Line>())
+                    str += line.GetComponent<Lines.Line>().Serialize(indentation+ "\t");
             }
         }
 

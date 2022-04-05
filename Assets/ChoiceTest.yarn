@@ -1,0 +1,26 @@
+title: New Text
+tags:
+---
+L1
+-> Opt1
+	Opt1L1
+	-> Opt1
+		Opt1L1
+		-> Opt1
+			Opt1L1
+			-> Opt1
+				Opt1L1
+				-> Opt1
+					Opt1L1
+					-> Opt1
+						Opt1L1
+						-> Opt1
+							Opt1L1
+							-> Opt1
+								Opt1L1
+-> Opt2
+	Opt2L1
+LastLine
+===
+
+

@@ -20,6 +20,7 @@ public class Node : Line
 
     public void AddLine(Line line){
         lines.Add(line);
+        line.lineParent = this;
     }
     
     public void RemoveLine(Line line){
@@ -30,8 +31,9 @@ public class Node : Line
     public override string Serialize(string indentation)
     {
         string str = "title: " + title + "\n" + "tags:\n" + "---\n";
-        foreach(Lines.Line line in lines){
-            str += line.Serialize(indentation);
+        foreach(Transform line in GetComponentInChildren<Box>().transform){
+            if(line.GetComponent<Lines.Line>())
+                str += line.GetComponent<Lines.Line>().Serialize(indentation);
         }
         str += "===\n";
         return str;

@@ -42,8 +42,8 @@ public class Serialization : MonoBehaviour
             new ExtensionFilter("All", "*"),
         };
         var path = StandaloneFileBrowser.SaveFilePanel("Save File", lastLocation, "Test.yarn", extensionList);
+        if(path == string.Empty) return;
         lastLocation = path;
-        
         File.WriteAllText(lastLocation,Serialize());
     }
 
@@ -57,7 +57,9 @@ public class Serialization : MonoBehaviour
         };
 
         var path = StandaloneFileBrowser.OpenFilePanel("Open File",lastLocation,extensionList,false);
-         foreach (Transform child in canvas) {
+        if(path.Length == 0) return;
+
+        foreach (Transform child in canvas) {
             Destroy(child.gameObject);
         }
         Deserializer.DeSerialize(File.ReadAllText(path[0]));

@@ -18,7 +18,7 @@ public class Box : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         group = GetComponent<VerticalLayoutGroup>();
         rtParent = transform.parent.GetComponent<RectTransform>();
         children = transform.childCount;
-        priority = GetComponentsInParent<Box>().Length;
+        priority = GetComponentsInParent<Transform>().Length;
     }
     private void Update(){
         if(children != transform.childCount){
@@ -38,16 +38,10 @@ public class Box : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         rtParent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,rtParent.rect.height + (size-rt.rect.height));
         rtParent.ForceUpdateRectTransforms();
         
-        foreach(Box box in GetComponentsInParent<Box>()){
-            if(transform.IsChildOf(box.transform) && priority-1 == box.priority){
-                box.UpdateSize();
-            }
-        }
-        foreach(ChoiceBox box in GetComponentsInParent<ChoiceBox>()){
-            if(transform.IsChildOf(box.transform) && priority-1 == box.priority){
-                box.UpdateSize();
-            }
-        }
+        if(transform.parent.GetComponentInParent<Box>())
+            transform.parent.GetComponentInParent<Box>().UpdateSize();
+        if(transform.parent.GetComponentInParent<ChoiceBox>())
+            transform.parent.GetComponentInParent<ChoiceBox>().UpdateSize();
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -55,7 +49,6 @@ public class Box : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         GameObject currentLine = ServiceDesk.instance.GetItem("CurrentLine");
         if(currentLine != null){
             Line line = currentLine.GetComponent<Line>();
-            while(line.boxes.Contains(this))
                 currentLine.GetComponent<Line>().boxes.Remove(this);
         }
     }
@@ -63,7 +56,11 @@ public class Box : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public void OnPointerEnter(PointerEventData eventData)
     {
         GameObject currentLine = ServiceDesk.instance.GetItem("CurrentLine");
-        if(currentLine != null)
+        if(currentLine != null && !transform.IsChildOf(currentLine.transform))
             currentLine.GetComponent<Line>().boxes.Add(this);
+    }
+
+    private void OnTransformParentChanged(){
+        priority = GetComponentsInParent<Transform>().Length;
     }
 }
