@@ -15,7 +15,10 @@ public class Node : MonoBehaviour
 
     void Update(){
         if(dragging && !downEnough) downEnoughCount += Time.deltaTime;
-        if(dragging && !downEnough && downEnoughCount >= downEnoughTreshold) downEnough = true;
+        if(dragging && !downEnough && downEnoughCount >= downEnoughTreshold){ 
+            downEnough = true;
+            transform.SetSiblingIndex(0);
+        }
         if(!dragging && !downEnough) return;
             transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition) + offset;
     }
@@ -25,6 +28,7 @@ public class Node : MonoBehaviour
         if(eventData.button != PointerEventData.InputButton.Left) return;
         offset = transform.position - Camera.main.ScreenToWorldPoint(Input.mousePosition);
         dragging = true;
+
     }
 
     public void OnUp(PointerEventData eventData){

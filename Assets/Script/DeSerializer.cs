@@ -14,6 +14,7 @@ public static class Deserializer
     private static Transform canvas;
     public static void Setup(Transform can){
         canvas = can;
+        Random.InitState((int)Time.time);
     }
 
     static state currentState = state.NodeSearch;
@@ -67,6 +68,12 @@ public static class Deserializer
             }
         }else if(line.TrimStart('\t').StartsWith("===")){
             currentState = state.NodeSearch;
+        }else if(line.TrimStart('\t').StartsWith("<<call ")){
+            lastDialogue = null;
+            CreateFunction(line.TrimStart('\t').Substring(7).TrimEnd('>'));            
+        }else if(line.TrimEnd('\t').StartsWith("[[")){
+            lastDialogue = null;
+            CreateReference(line.TrimStart('\t','[').TrimEnd(']'));
         }else{
             //Treat as DIALOGUE
             if(currentParent.type == Lines.LineType.Choice){
@@ -99,9 +106,33 @@ public static class Deserializer
     private static void CreateNode(string title){
         var newNode = MonoBehaviour.Instantiate(ServiceDesk.instance.GetItem("Node"));
         newNode.transform.SetParent(canvas,false);
+        Vector3 center = new Vector3(Random.Range(Screen.width*.25f,Screen.width*.75f),Random.Range(Screen.width*.2f,Screen.width*.9f),0);
+        newNode.transform.position = Camera.main.ScreenToWorldPoint(center);
+        newNode.transform.position = newNode.transform.position - new Vector3(0,0,newNode.transform.position.z);
         newNode.GetComponent<Lines.Node>().title = title;
         currentNode = newNode.GetComponent<Lines.Node>();
         currentParent = currentNode;
+    }
+
+    private static void CreateFunction(string func){
+        var newNode = MonoBehaviour.Instantiate(ServiceDesk.instance.GetItem("Function"));
+        var function = newNode.GetComponent<Lines.Function>();
+        function.func = func;
+        newNode.transform.SetParent(canvas);
+        if(currentParent.type == Lines.LineType.Choice){
+            var choice = currentParent as Lines.Choice;
+            var currentBox = choice.choices[choice.choices.Count-1].option.GetComponentInChildren<Box>();
+            newNode.transform.SetParent(currentBox.transform);
+            newNode.transform.SetSiblingIndex(currentBox.transform.childCount-2);
+            choice.AddLine(function);
+            currentBox.UpdateSize();
+        }else{
+            var currentBox = (currentParent as Lines.Node).GetComponentInChildren<Box>();
+            newNode.transform.SetParent(currentBox.transform);
+            newNode.transform.SetSiblingIndex(currentBox.transform.childCount-2);
+            (currentParent as Lines.Node).AddLine(function);
+            currentBox.UpdateSize();
+        }
     }
 
     private static Lines.Dialogue CreateDialogue(){
@@ -124,6 +155,30 @@ public static class Deserializer
         }
         
         return newNode.GetComponent<Lines.Dialogue>();
+    }
+
+    
+    private static Lines.Reference CreateReference(string nodeName){
+        var newNode = MonoBehaviour.Instantiate(ServiceDesk.instance.GetItem("Reference"));
+        newNode.transform.SetParent(canvas);
+        var reference = newNode.GetComponent<Lines.Reference>();
+        if(currentParent.type == Lines.LineType.Choice){
+            var choice = currentParent as Lines.Choice;
+            var currentBox = choice.choices[choice.choices.Count-1].option.GetComponentInChildren<Box>();
+            reference.transform.SetParent(currentBox.transform);
+            reference.transform.SetSiblingIndex(currentBox.transform.childCount-2);
+            choice.AddLine(reference);
+            currentBox.UpdateSize();
+        }else{
+            var currentBox = (currentParent as Lines.Node).GetComponentInChildren<Box>();
+            reference.transform.SetParent(currentBox.transform);
+            reference.transform.SetSiblingIndex(currentBox.transform.childCount-2);
+            (currentParent as Lines.Node).AddLine(reference);
+            currentBox.UpdateSize();
+        }
+        reference.nodeName = nodeName;
+        
+        return newNode.GetComponent<Lines.Reference>();
     }
 
     private static Lines.Choice CreateChoice(string choiceLine){

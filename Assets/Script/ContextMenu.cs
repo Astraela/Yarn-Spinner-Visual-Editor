@@ -44,6 +44,9 @@ public class ContextMenu : MonoBehaviour
             case "Option":
                 prefab = Instantiate(ServiceDesk.instance.GetItem("Option"));
                 break;
+            case "Reference":
+                prefab = Instantiate(ServiceDesk.instance.GetItem("Reference"));
+                break;
         }
         prefab.transform.SetParent(currentBox.transform);
         prefab.transform.SetSiblingIndex(currentBox.transform.childCount-2);

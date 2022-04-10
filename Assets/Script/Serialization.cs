@@ -41,9 +41,14 @@ public class Serialization : MonoBehaviour
             new ExtensionFilter("Yarn", "yarn"),
             new ExtensionFilter("All", "*"),
         };
-        var path = StandaloneFileBrowser.SaveFilePanel("Save File", lastLocation, "Test.yarn", extensionList);
+        string location = PlayerPrefs.GetString("LastYarnLocation",lastLocation);
+        if(location.Contains(".yarn")){
+            location = location.Substring(0,location.LastIndexOf('\\'));
+        }
+        var path = StandaloneFileBrowser.SaveFilePanel("Save File", location, "Dialogue.yarn", extensionList);
         if(path == string.Empty) return;
         lastLocation = path;
+        PlayerPrefs.SetString("LastYarnLocation",lastLocation);
         File.WriteAllText(lastLocation,Serialize());
     }
 
@@ -56,12 +61,19 @@ public class Serialization : MonoBehaviour
             new ExtensionFilter("All", "*"),
         };
 
-        var path = StandaloneFileBrowser.OpenFilePanel("Open File",lastLocation,extensionList,false);
+        string location = PlayerPrefs.GetString("LastYarnLocation",lastLocation);
+        if(location.Contains(".yarn")){
+            location = location.Substring(0,location.LastIndexOf('\\'));
+        }
+        var path = StandaloneFileBrowser.OpenFilePanel("Open File",location,extensionList,false);
         if(path.Length == 0) return;
 
         foreach (Transform child in canvas) {
             Destroy(child.gameObject);
         }
+        PlayerPrefs.SetString("LastYarnLocation",lastLocation);
+        lastLocation = path[0];
+        PropertyMiddleman.instance.Hide();
         Deserializer.DeSerialize(File.ReadAllText(path[0]));
     }
 

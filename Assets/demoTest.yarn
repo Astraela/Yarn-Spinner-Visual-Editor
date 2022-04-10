@@ -1,0 +1,20 @@
+title: Node 2
+tags:
+---
+<<call 2Args(test,test2)>>
+===
+
+
+title: New Text
+tags:
+---
+-> Option 1
+-> Option 2
+-> Option 3
+-> Option 4
+	Lines1
+	Lines2
+[[Node 2]]
+===
+
+

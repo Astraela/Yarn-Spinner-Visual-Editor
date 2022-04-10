@@ -28,7 +28,7 @@ public class Choice : MonoBehaviour
             var inputField = newOption.GetComponentInChildren<TMP_InputField>();
             inputField.text = option.choiceString;
             inputField.onValueChanged.AddListener((string data) => {option.choiceString = data;});
-            newOption.GetComponentInChildren<Button>().onClick.AddListener(() => DeletePress(siblingIndex-1));
+            newOption.GetComponentInChildren<Button>().onClick.AddListener(() => DeletePress(newOption.transform.GetSiblingIndex()));
             newOption.GetComponentInChildren<TextMeshProUGUI>().text = "Option " + (siblingIndex+1);
             newOption.transform.SetParent(verticalList);
             newOption.transform.SetSiblingIndex(siblingIndex);

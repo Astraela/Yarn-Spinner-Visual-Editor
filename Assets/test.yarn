@@ -1,6 +1,9 @@
 title: New Text
 tags:
 ---
+weff
+<<call LoadScene("Scene/test")>>
+Line2
 ===
 
 

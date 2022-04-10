@@ -17,7 +17,7 @@ public class Node : MonoBehaviour
         InputField.onValueChanged.AddListener((string data) => {line.title = data;});
     }
 
-    public void DeleteDialogue(){
+    public void DeleteSelf(){
         Destroy(currentLine.gameObject);
         PropertyMiddleman.instance.Hide();
     }

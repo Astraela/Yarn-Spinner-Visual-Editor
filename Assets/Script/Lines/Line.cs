@@ -10,6 +10,8 @@ public enum LineType
     Node = 0,
     Dialogue = 1,
     Choice = 2,
+    Function = 3,
+    Reference = 4,
 }
 
 
